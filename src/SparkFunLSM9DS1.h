@@ -25,12 +25,15 @@ Distributed as-is; no warranty is given.
 #if defined(ARDUINO) && ARDUINO >= 100
   #include "Arduino.h"
 #else
-  #include "WProgram.h"
-  #include "pins_arduino.h"
+  //#include "WProgram.h" 		//gmmorte
+  //#include "pins_arduino.h" 		//gmmorte
 #endif
 
+#include <inttypes.h> 			//gmmorte
 #include "LSM9DS1_Registers.h"
 #include "LSM9DS1_Types.h"
+
+
 
 #define LSM9DS1_AG_ADDR(sa0)	((sa0) == 0 ? 0x6A : 0x6B)
 #define LSM9DS1_M_ADDR(sa1)		((sa1) == 0 ? 0x1C : 0x1E)

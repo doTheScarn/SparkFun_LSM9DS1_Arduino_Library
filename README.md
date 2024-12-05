@@ -22,6 +22,13 @@ Documentation
 * **[Product Repository](https://github.com/sparkfun/LSM9DS1_Breakout)** - Main repository (including hardware files) for the LSM9DS1 Breakout.
 * **[Hookup Guide](https://learn.sparkfun.com/tutorials/LSM9DS1-hookup-guide)** - Basic hookup guide for the LSM9DS1 Breakout.
 
+
+Raspberry Pi Updates
+---------------------
+How to compile
+`g++ -Wall LSM9DS1_Basic_SPI.cpp SparkFunLSM9DS1.cpp -lwiringPi -I . -o SparkFunLSM9DS1`
+
+
 Products that use this Library
 ---------------------------------
 

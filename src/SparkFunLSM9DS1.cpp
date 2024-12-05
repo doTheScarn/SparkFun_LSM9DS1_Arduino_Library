@@ -24,14 +24,22 @@ Distributed as-is; no warranty is given.
 #include "SparkFunLSM9DS1.h"
 #include "LSM9DS1_Registers.h"
 #include "LSM9DS1_Types.h"
-#include <Wire.h> // Wire library is used for I2C
-#include <SPI.h>  // SPI library is used for...SPI.
+//#include <Wire.h> // Wire library is used for I2C
+//#include <SPI.h>  // SPI library is used for...SPI.
+#include <wiringPi.h>
+#include <wiringPiSPI.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <iostream>
+#include <cstdlib>
+#include <errno.h>
 
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-#endif
+
+//#if defined(ARDUINO) && ARDUINO >= 100  //////gmmorte
+//  #include "Arduino.h"
+//#else
+//  #include "WProgram.h"
+//#endif
 
 #define LSM9DS1_COMMUNICATION_TIMEOUT 1000
 
@@ -144,7 +152,6 @@ uint16_t LSM9DS1::begin()
 	//! Todo: don't use _xgAddress or _mAddress, duplicating memory
 	_xgAddress = settings.device.agAddress;
 	_mAddress = settings.device.mAddress;
-	
 	constrainScales();
 	// Once we have the scale values, we can calculate the resolution
 	// of each sensor. That's what these functions are for. One for each sensor
@@ -168,13 +175,13 @@ uint16_t LSM9DS1::begin()
 		return 0;
 	
 	// Gyro initialization stuff:
-	initGyro();	// This will "turn on" the gyro. Setting up interrupts, etc.
+	//gm//initGyro();	// This will "turn on" the gyro. Setting up interrupts, etc.
 	
 	// Accelerometer initialization stuff:
-	initAccel(); // "Turn on" all axes of the accel. Set up interrupts, etc.
+	//gm//initAccel(); // "Turn on" all axes of the accel. Set up interrupts, etc.
 	
 	// Magnetometer initialization stuff:
-	initMag(); // "Turn on" all axes of the mag. Set up interrupts, etc.
+	//gm//initMag(); // "Turn on" all axes of the mag. Set up interrupts, etc.
 
 	// Once everything is initialized, return the WHO_AM_I registers we read:
 	return whoAmICombined;
@@ -1037,14 +1044,17 @@ void LSM9DS1::initSPI()
 	pinMode(_mAddress, OUTPUT);
 	digitalWrite(_mAddress, HIGH);
 	
-	SPI.begin();
+	//SPI.begin(); //gmmorte
+	////////if (wiringPiSPISetup (0, 500000) < 0) //gmmorte- channel, clk max=32M
+	////////	fprintf (stderr, "SPI Setup Failed %s\n", strerror (errno));
+	wiringPiSPISetup (0, 500000);
 	// Maximum SPI frequency is 10MHz, could divide by 2 here:
-	SPI.setClockDivider(SPI_CLOCK_DIV2);
+	//SPI.setClockDivider(SPI_CLOCK_DIV2); //gmmorte
 	// Data is read and written MSb first.
-	SPI.setBitOrder(MSBFIRST);
+	//SPI.setBitOrder(MSBFIRST); //gmmorte
 	// Data is captured on rising edge of clock (CPHA = 0)
 	// Base value of the clock is HIGH (CPOL = 1)
-	SPI.setDataMode(SPI_MODE0);
+	//SPI.setDataMode(SPI_MODE0); //gmmorte
 }
 
 void LSM9DS1::SPIwriteByte(uint8_t csPin, uint8_t subAddress, uint8_t data)
@@ -1053,18 +1063,31 @@ void LSM9DS1::SPIwriteByte(uint8_t csPin, uint8_t subAddress, uint8_t data)
 	
 	// If write, bit 0 (MSB) should be 0
 	// If single write, bit 1 should be 0
-	SPI.transfer(subAddress & 0x3F); // Send Address
-	SPI.transfer(data); // Send data
+	//SPI.transfer(subAddress & 0x3F); // Send Address
+	//SPI.transfer(data); // Send data
+
+	subAddress = subAddress & 0x3F; 		//gmmorte
+	uint8_t* subAddress_pointer; 			//gmmorte
+	subAddress_pointer = &subAddress;		//gmmorte
+	int subAddress_TEMP = *subAddress_pointer;
+	wiringPiSPIDataRW(0, subAddress_pointer, 0x01); //gmmorte
+	unsigned char* data_pointer;			//gmmorte
+	data_pointer = &data;				//gmmorte
+	std::cout<<"wbyte: passing "<<int(data)<<" to address "<<int(subAddress_TEMP)<<std::endl;
+	wiringPiSPIDataRW(0, data_pointer, 1);		//gmmorte; added arguments
+	//gm//std::cout << "wbyte: "<<int(*data_pointer)<<std::endl; //gmmorte test
 	
 	digitalWrite(csPin, HIGH); // Close communication
 }
 
-uint8_t LSM9DS1::SPIreadByte(uint8_t csPin, uint8_t subAddress)
+//uint8_t LSM9DS1::SPIreadByte(uint8_t csPin, uint8_t )
+uint8_t LSM9DS1::SPIreadByte(uint8_t csPin, uint8_t subAddress )
 {
 	uint8_t temp;
 	// Use the multiple read function to read 1 byte. 
 	// Value is returned to `temp`.
 	SPIreadBytes(csPin, subAddress, &temp, 1);
+	std::cout << "rbyte: "<<int(temp)<<std::endl;	//gmmorte test
 	return temp;
 }
 
@@ -1076,29 +1099,47 @@ void LSM9DS1::SPIreadBytes(uint8_t csPin, uint8_t subAddress,
 	// Mag SPI port is different. If we're reading multiple bytes, 
 	// set bit 1 to 1. The remaining six bytes are the address to be read
 	if ((csPin == _mAddress) && count > 1)
+	//if (count > 1)  //gmmorte
 		rAddress |= 0x40;
 	
 	digitalWrite(csPin, LOW); // Initiate communication
-	SPI.transfer(rAddress);
-	for (int i=0; i<count; i++)
-	{
-		dest[i] = SPI.transfer(0x00); // Read into destination array
-	}
+	delayMicroseconds(10);
+	//SPI.transfer(rAddress);
+	uint8_t* rAddress_pointer;		//gmmorte
+	rAddress_pointer = &rAddress;			//gmmorte
+	////wiringPiSPIDataRW(0, *rAddress_pointer, 1); 	//gmmorte; added arguments
+	wiringPiSPIDataRW(0, rAddress_pointer, 1);  //test
+	//gm//for (int i=0; i<count; i++)
+	//gm//{
+		//dest[i] = SPI.transfer(0x00); // Read into destination array
+		//dest[i] = wiringPiSPIDataRW(0, 0x00, 1);//gmmorte; added arguments
+		//dest[0]=0;dest[1]=0;dest[2]=0;dest[3]=0;
+		wiringPiSPIDataRW (0, dest, count); //count was 1
+		//gm//std::cout<<"rbytes: "<<int(dest[i])<<std::endl; //gmmorte test
+	std::cout<<"asking for address: 0x"<<std::hex<<int(subAddress) <<"\n";
+	std::cout << "got " << int(count) << " bytes of dest: ";
+	for (int j=0; j<count; j++){
+		std::cout << "0x";
+		std::cout <<std::hex << int(dest[j]) << ", ";}
+	std::cout << std::endl;
+	//gm//}
 	digitalWrite(csPin, HIGH); // Close communication
 }
 
 void LSM9DS1::initI2C()
 {
-	Wire.begin();	// Initialize I2C library
+	//Wire.begin();	// Initialize I2C library
+	//[gmmorte - not yet coded for RPi]
 }
 
 // Wire.h read and write protocols
 void LSM9DS1::I2CwriteByte(uint8_t address, uint8_t subAddress, uint8_t data)
 {
-	Wire.beginTransmission(address);  // Initialize the Tx buffer
-	Wire.write(subAddress);           // Put slave register address in Tx buffer
-	Wire.write(data);                 // Put data in Tx buffer
-	Wire.endTransmission();           // Send the Tx buffer
+	//[gmmorte - not yet coded for RPi]
+	//Wire.beginTransmission(address);  // Initialize the Tx buffer
+	//Wire.write(subAddress);           // Put slave register address in Tx buffer
+	//Wire.write(data);                 // Put data in Tx buffer
+	//Wire.endTransmission();           // Send the Tx buffer
 }
 
 uint8_t LSM9DS1::I2CreadByte(uint8_t address, uint8_t subAddress)
@@ -1106,6 +1147,8 @@ uint8_t LSM9DS1::I2CreadByte(uint8_t address, uint8_t subAddress)
 	int timeout = LSM9DS1_COMMUNICATION_TIMEOUT;
 	uint8_t data; // `data` will store the register data	
 	
+	//[gmmorte - not yet coded for RPi]
+	/*
 	Wire.beginTransmission(address);         // Initialize the Tx buffer
 	Wire.write(subAddress);	                 // Put slave register address in Tx buffer
 	Wire.endTransmission(true);             // Send the Tx buffer, but send a restart to keep connection alive
@@ -1118,11 +1161,14 @@ uint8_t LSM9DS1::I2CreadByte(uint8_t address, uint8_t subAddress)
 	
 	data = Wire.read();                      // Fill Rx buffer with result
 	return data;                             // Return data read from slave register
+	*/
 }
 
 uint8_t LSM9DS1::I2CreadBytes(uint8_t address, uint8_t subAddress, uint8_t * dest, uint8_t count)
 {  
 	int timeout = LSM9DS1_COMMUNICATION_TIMEOUT;
+	//[gmmorte - not yet coded for RPi]
+	/*
 	Wire.beginTransmission(address);   // Initialize the Tx buffer
 	// Next send the register to be read. OR with 0x80 to indicate multi-read.
 	Wire.write(subAddress | 0x80);     // Put slave register address in Tx buffer
@@ -1142,5 +1188,7 @@ uint8_t LSM9DS1::I2CreadBytes(uint8_t address, uint8_t subAddress, uint8_t * des
 			dest[i++] = Wire.read();
 		}
 	}
-	return count;
+	*/
+	//return count; //gmmorte commented
+	return 0; //gmmorte
 }
