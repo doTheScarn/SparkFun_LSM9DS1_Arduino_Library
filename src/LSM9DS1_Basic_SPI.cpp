@@ -308,9 +308,9 @@ void printSingle(void)
   imu.readAccel();
   imu.readGyro();
   imu.readMag();
-  std::cout << imu.calcAccel(imu.ax) << ",";
-  std::cout << imu.calcAccel(imu.ay) << ",";
-  std::cout << imu.calcAccel(imu.az) << ",";
+  std::cout << imu.calcAccel(imu.ax)*9.8 << ",";
+  std::cout << imu.calcAccel(imu.ay)*9.8 << ",";
+  std::cout << imu.calcAccel(imu.az)*9.8 << ",";
   std::cout << imu.calcGyro(imu.gx) << ",";
   std::cout << imu.calcGyro(imu.gy) << ",";
   std::cout << imu.calcGyro(imu.gz) << ",";
