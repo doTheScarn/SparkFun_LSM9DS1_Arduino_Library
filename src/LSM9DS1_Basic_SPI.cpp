@@ -92,8 +92,8 @@ LSM9DS1 imu; //gmmorte
 // using hardware SPI, so other signal pins are set in stone.
 //#define LSM9DS1_M_CS	10 // Can be any digital pin
 //#define LSM9DS1_AG_CS	9  // Can be any other digital pin
-#define LSM9DS1_M_CS  7 //gmmorte: BCM GPIO 4
-#define LSM9DS1_AG_CS 0 //gmmorte: BCM GPIO 17
+#define LSM9DS1_M_CS  4 // pin 16 / GPIO 23 / WiringPi 4
+#define LSM9DS1_AG_CS 5 // pin 18 / GPIO 24 / WiringPi 5
 
 ////////////////////////////
 // Sketch Output Settings //
@@ -106,7 +106,7 @@ LSM9DS1 imu; //gmmorte
 // a declination to get a more accurate heading. Calculate 
 // your's here:
 // http://www.ngdc.noaa.gov/geomag-web/#declination
-#define DECLINATION -8.58 // Declination (degrees) in Boulder, CO.
+#define DECLINATION -10.66 // Declination (degrees) in Northern Virginia
 
 
 void setup() 
@@ -114,7 +114,6 @@ void setup()
   wiringPiSetup(); //gmmorte
   if (wiringPiSPISetup (0, 500000) < 0) { //gmmorte
 	std::cout<<"SPI Setup Failed"<<std::endl; }
-  std::cout<<"test point 1"<<std::endl;  //gmmorte test
   //Serial.begin(115200);  //gmmorte
   
   // Before initializing the IMU, there are a few settings
@@ -155,7 +154,7 @@ void printGyro()
   // Either print them as raw ADC values, or calculated in DPS.
   //Serial.print("G: ");
   std::cout << "G: ";
-#ifdef PRINT_CALCULATED
+  #ifdef PRINT_CALCULATED
   // If you want to print calculated values, you can use the
   // calcGyro helper function to convert a raw ADC value to
   // DPS. Give the function the value that you want to convert.
@@ -168,7 +167,7 @@ void printGyro()
   std::cout << imu.calcGyro(imu.gy) << ", ";
   std::cout << imu.calcGyro(imu.gz) << std::endl;
 
-#elif defined PRINT_RAW
+  #elif defined PRINT_RAW
   //Serial.print(imu.gx);
   //Serial.print(", ");
   //Serial.print(imu.gy);
@@ -177,7 +176,7 @@ void printGyro()
   std::cout << imu.gx << ", ";
   std::cout << imu.gy << ", ";
   std::cout << imu.gz << std::endl;
-#endif
+  #endif
 }
 
 void printAccel()
@@ -191,7 +190,7 @@ void printAccel()
   // Either print them as raw ADC values, or calculated in g's.
   //Serial.print("A: ");
   std::cout << "A: ";
-#ifdef PRINT_CALCULATED
+  #ifdef PRINT_CALCULATED
   // If you want to print calculated values, you can use the
   // calcAccel helper function to convert a raw ADC value to
   // g's. Give the function the value that you want to convert.
@@ -203,16 +202,16 @@ void printAccel()
   std::cout << imu.calcAccel(imu.ax) << ", ";
   std::cout << imu.calcAccel(imu.ay) << ", ";
   std::cout << imu.calcAccel(imu.az) << std::endl;
-#elif defined PRINT_RAW 
+  #elif defined PRINT_RAW 
   //Serial.print(imu.ax);
   //Serial.print(", ");
   //Serial.print(imu.ay);
   //Serial.print(", ");
   //Serial.println(imu.az);
-  std::cout << int(imu.ax) << ", ";
-  std::cout << int(imu.ay) << ", ";
-  std::cout << int(imu.az) << std::endl;
-#endif
+  std::cout << (imu.ax) << ", ";
+  std::cout << (imu.ay) << ", ";
+  std::cout << (imu.az) << std::endl;
+  #endif
 
 }
 
@@ -227,7 +226,7 @@ void printMag()
   // Either print them as raw ADC values, or calculated in Gauss.
   //Serial.print("M: ");
   std::cout << "M: ";
-#ifdef PRINT_CALCULATED
+  #ifdef PRINT_CALCULATED
   // If you want to print calculated values, you can use the
   // calcMag helper function to convert a raw ADC value to
   // Gauss. Give the function the value that you want to convert.
@@ -239,7 +238,7 @@ void printMag()
   std::cout << imu.calcMag(imu.mx) << ", ";
   std::cout << imu.calcMag(imu.my) << ", ";
   std::cout << imu.calcMag(imu.mz) << std::endl;
-#elif defined PRINT_RAW
+  #elif defined PRINT_RAW
   //Serial.print(imu.mx);
   //Serial.print(", ");
   //Serial.print(imu.my);
@@ -248,7 +247,7 @@ void printMag()
   std::cout << imu.mx << ", ";
   std::cout << imu.my << ", ";
   std::cout << imu.mz << std::endl;
-#endif
+  #endif
 }
 
 // Calculate pitch, roll, and heading.

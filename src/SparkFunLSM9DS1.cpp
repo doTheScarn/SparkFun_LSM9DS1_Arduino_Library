@@ -175,13 +175,13 @@ uint16_t LSM9DS1::begin()
 		return 0;
 	
 	// Gyro initialization stuff:
-	//gm//initGyro();	// This will "turn on" the gyro. Setting up interrupts, etc.
+	initGyro();	// This will "turn on" the gyro. Setting up interrupts, etc.
 	
 	// Accelerometer initialization stuff:
-	//gm//initAccel(); // "Turn on" all axes of the accel. Set up interrupts, etc.
+	initAccel(); // "Turn on" all axes of the accel. Set up interrupts, etc.
 	
 	// Magnetometer initialization stuff:
-	//gm//initMag(); // "Turn on" all axes of the mag. Set up interrupts, etc.
+	initMag(); // "Turn on" all axes of the mag. Set up interrupts, etc.
 
 	// Once everything is initialized, return the WHO_AM_I registers we read:
 	return whoAmICombined;
@@ -1116,13 +1116,6 @@ void LSM9DS1::SPIreadBytes(uint8_t csPin, uint8_t subAddress,
 		//dest[0]=0;dest[1]=0;dest[2]=0;dest[3]=0;
 		wiringPiSPIDataRW (0, dest, count); //count was 1
 		//gm//std::cout<<"rbytes: "<<int(dest[i])<<std::endl; //gmmorte test
-	std::cout<<"asking for address: 0x"<<std::hex<<int(subAddress) <<"\n";
-	std::cout << "got " << int(count) << " bytes of dest: ";
-	for (int j=0; j<count; j++){
-		std::cout << "0x";
-		std::cout <<std::hex << int(dest[j]) << ", ";}
-	std::cout << std::endl;
-	//gm//}
 	digitalWrite(csPin, HIGH); // Close communication
 }
 
