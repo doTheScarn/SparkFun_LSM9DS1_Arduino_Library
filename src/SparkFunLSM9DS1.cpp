@@ -1073,9 +1073,7 @@ void LSM9DS1::SPIwriteByte(uint8_t csPin, uint8_t subAddress, uint8_t data)
 	wiringPiSPIDataRW(0, subAddress_pointer, 0x01); //gmmorte
 	unsigned char* data_pointer;			//gmmorte
 	data_pointer = &data;				//gmmorte
-	std::cout<<"wbyte: passing "<<int(data)<<" to address "<<int(subAddress_TEMP)<<std::endl;
 	wiringPiSPIDataRW(0, data_pointer, 1);		//gmmorte; added arguments
-	//gm//std::cout << "wbyte: "<<int(*data_pointer)<<std::endl; //gmmorte test
 	
 	digitalWrite(csPin, HIGH); // Close communication
 }
@@ -1087,7 +1085,6 @@ uint8_t LSM9DS1::SPIreadByte(uint8_t csPin, uint8_t subAddress )
 	// Use the multiple read function to read 1 byte. 
 	// Value is returned to `temp`.
 	SPIreadBytes(csPin, subAddress, &temp, 1);
-	std::cout << "rbyte: "<<int(temp)<<std::endl;	//gmmorte test
 	return temp;
 }
 
@@ -1115,7 +1112,6 @@ void LSM9DS1::SPIreadBytes(uint8_t csPin, uint8_t subAddress,
 		//dest[i] = wiringPiSPIDataRW(0, 0x00, 1);//gmmorte; added arguments
 		//dest[0]=0;dest[1]=0;dest[2]=0;dest[3]=0;
 		wiringPiSPIDataRW (0, dest, count); //count was 1
-		//gm//std::cout<<"rbytes: "<<int(dest[i])<<std::endl; //gmmorte test
 	digitalWrite(csPin, HIGH); // Close communication
 }
 

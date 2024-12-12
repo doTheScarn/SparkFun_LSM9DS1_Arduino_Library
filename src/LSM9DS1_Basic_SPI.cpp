@@ -125,7 +125,6 @@ void setup()
   // The above lines will only take effect AFTER calling
   // imu.begin(), which verifies communication with the IMU
   // and turns it on.
-std::cout <<"mAddress, agAddress: "<<int(imu.settings.device.mAddress) << ", " << int(imu.settings.device.agAddress) <<std::endl;
   if (!imu.begin())
   {
     //Serial.println("Failed to communicate with LSM9DS1.");
@@ -304,10 +303,29 @@ void loop()
   delay(PRINT_SPEED);
 }
 
+void printSingle(void)
+{
+  imu.readAccel();
+  imu.readGyro();
+  imu.readMag();
+  std::cout << imu.calcAccel(imu.ax) << ",";
+  std::cout << imu.calcAccel(imu.ay) << ",";
+  std::cout << imu.calcAccel(imu.az) << ",";
+  std::cout << imu.calcGyro(imu.gx) << ",";
+  std::cout << imu.calcGyro(imu.gy) << ",";
+  std::cout << imu.calcGyro(imu.gz) << ",";
+  std::cout << imu.calcMag(imu.mx) << ",";
+  std::cout << imu.calcMag(imu.my) << ",";
+  std::cout << imu.calcMag(imu.mz);
+  std::cout << std::endl;
+}
 
 int main (void)
 {
   setup();
+  printSingle();
+  return 0;
+
   while(1)
   {    
     loop();
